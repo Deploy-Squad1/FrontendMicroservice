@@ -7,6 +7,7 @@ const router = useRouter()
 const formData = ref({
   username: '',
   password: '',
+  email: '',
   confirmPassword: ''
 })
 const errorMessage = ref('')
@@ -21,7 +22,8 @@ const handleRegister = async () => {
     errorMessage.value = ''
     await api.post('/registration/', {
       username: formData.value.username,
-      password: formData.value.password
+      password: formData.value.password,
+      email: formData.value.email
     })
     alert('Request submitted. You may now login.')
     router.push('/login')
@@ -53,6 +55,15 @@ const handleRegister = async () => {
               class="form-control bg-transparent border-secondary text-light shadow-none p-3"
               placeholder="Username"
               v-model="formData.username"
+              required
+          />
+        </div>
+        <div class="mb-4">
+          <input
+              type="text"
+              class="form-control bg-transparent border-secondary text-light shadow-none p-3"
+              placeholder="Email"
+              v-model="formData.email"
               required
           />
         </div>
