@@ -16,8 +16,6 @@ const handleLogin = async () => {
       password: password.value
     })
 
-    localStorage.setItem('token', response.data.access)
-
     router.push('/map')
   } catch (error) {
     errorMessage.value = 'Invalid credentials.'
