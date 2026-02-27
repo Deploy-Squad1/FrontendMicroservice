@@ -7,17 +7,6 @@ import {api, mapApi} from '../api.js';
 
 const router = useRouter();
 
-const iconRetinaUrl = new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href;
-const iconUrl = new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href;
-const shadowUrl = new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href;
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: iconRetinaUrl,
-  iconUrl: iconUrl,
-  shadowUrl: shadowUrl,
-});
-
 const map = shallowRef(null);
 let markerGroup = null;
 
