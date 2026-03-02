@@ -21,7 +21,7 @@ const setupInterceptors = (axiosInstance) => {
         (response) => response,
         async (error) => {
             const originalRequest = error.config;
-            if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/token/refresh/') {
+            if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/token/refresh/' && originalRequest.url !== '/passcode/verify/') {
                 originalRequest._retry = true;
                 try{
                     await api.post('/token/refresh/');

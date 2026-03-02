@@ -16,13 +16,25 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
     const publicPages = ['Gatekeeper', 'Login', 'Register'];
     if (!publicPages.includes(to.name) && !isAuthenticated) {
-        next('/login');
-    } else{
-        next();
+        next('/login/');
     }
+    if(to.path === '/login') {
+        const passcode = sessionStorage.getItem('passcode');
+        if (!passcode) {
+            return next('/');
+        }
+        try {
+            await api.post('/passcode/verify/', { passcode: passcode });
+            return next();
+        } catch (error) {
+            sessionStorage.removeItem('passcode');
+            return next('/');
+        }
+    }
+    next();
 })
 export default router

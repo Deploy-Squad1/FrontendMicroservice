@@ -25,7 +25,6 @@ const handleRegister = async () => {
       password: formData.value.password,
       email: formData.value.email
     })
-    alert('Request submitted. You may now login.')
     router.push('/login')
   } catch (error) {
     errorMessage.value = 'Failed to register. User may already exist.'

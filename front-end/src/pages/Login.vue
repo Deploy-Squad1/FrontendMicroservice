@@ -7,10 +7,6 @@ const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
 const passcode = sessionStorage.getItem('passcode')
-if (!passcode) {
-  router.push('/gatekeeper')
-}
-
 const handleLogin = async () => {
   try {
     errorMessage.value = ''
@@ -19,7 +15,7 @@ const handleLogin = async () => {
       password: password.value,
       passcode: passcode
     })
-    sessionStorage.removeItem('secret_passcode');
+    sessionStorage.removeItem('passcode');
     localStorage.setItem('isAuthenticated', 'true')
     router.push('/map')
   } catch (error) {

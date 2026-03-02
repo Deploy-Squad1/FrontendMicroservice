@@ -11,7 +11,7 @@ const handleEnter = async () => {
     errorMessage.value = ''
     await api.post('/passcode/verify/', {passcode: passCode.value})
     sessionStorage.setItem('passcode', passCode.value)
-    router.push('/login')
+    router.push('/login/')
   } catch (error) {
     errorMessage.value = 'Invalid passcode or expired.'
     console.error(error)
