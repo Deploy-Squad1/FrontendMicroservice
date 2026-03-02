@@ -1,5 +1,5 @@
 <script setup>
-import {ref, shallowRef, onMounted, watch} from 'vue';
+import{ref, shallowRef, onMounted, watch} from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import {useRouter} from 'vue-router';
