@@ -1,20 +1,21 @@
 <script setup>
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
-import api from '../api'
-
+import {api}  from '../api.js'
 const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
-
+const passcode = sessionStorage.getItem('passcode')
 const handleLogin = async () => {
   try {
     errorMessage.value = ''
     const response = await api.post('/login/', {
       username: username.value,
-      password: password.value
+      password: password.value,
+      passcode: passcode
     })
+    sessionStorage.removeItem('passcode');
     localStorage.setItem('isAuthenticated', 'true')
     router.push('/map')
   } catch (error) {

@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {useRouter} from 'vue-router'
-import api from '../api'
+import {api} from '../api.js'
 
 const router = useRouter()
 const passCode = ref('')
@@ -9,9 +9,9 @@ const errorMessage = ref('')
 const handleEnter = async () => {
   try {
     errorMessage.value = ''
-    await api.post('/verify-passcode/', {passcode: passCode.value})
-
-    router.push('/login')
+    await api.post('/passcode/verify/', {passcode: passCode.value})
+    sessionStorage.setItem('passcode', passCode.value)
+    router.push('/login/')
   } catch (error) {
     errorMessage.value = 'Invalid passcode or expired.'
     console.error(error)

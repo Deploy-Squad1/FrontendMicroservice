@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
-import api from '../api'
+import {api} from '../api.js'
 
 const router = useRouter()
 const formData = ref({
@@ -25,7 +25,6 @@ const handleRegister = async () => {
       password: formData.value.password,
       email: formData.value.email
     })
-    alert('Request submitted. You may now login.')
     router.push('/login')
   } catch (error) {
     errorMessage.value = 'Failed to register. User may already exist.'
