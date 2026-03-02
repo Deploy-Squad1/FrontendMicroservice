@@ -3,6 +3,7 @@ import Gatekeeper from "../pages/Gatekeeper.vue";
 import Register from "../pages/Register.vue"
 import Login from "../pages/Login.vue"
 import Map from "../pages/Map.vue"
+import api from "@/api.js";
 
 const routes = [
     {path: '/', name: 'Gatekeeper', component: Gatekeeper},
@@ -21,6 +22,22 @@ router.beforeEach(async (to, from, next) => {
     const publicPages = ['Gatekeeper', 'Login', 'Register'];
     if (!publicPages.includes(to.name) && !isAuthenticated) {
         next('/login/');
+    try {
+        await api.get('/ip/check/');
+    } catch (error) {
+        if (error.response.status === 403) {
+            window.location.href = error.response.data['redirect'];
+            return false;
+        }
+        throw error;
+    }
+
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const publicPages = ['Gatekeeper', 'Login', 'Register'];
+    if (!publicPages.includes(to.name) && !isAuthenticated) {
+        next('/login');
+    } else {
+        next();
     }
     if(to.path === '/login') {
         const passcode = sessionStorage.getItem('passcode');
