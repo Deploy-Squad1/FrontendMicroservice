@@ -1,4 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import BlockIP from "../pages/BlockIP.vue";
 import Gatekeeper from "../pages/Gatekeeper.vue";
 import Register from "../pages/Register.vue"
 import Login from "../pages/Login.vue"
@@ -10,6 +11,7 @@ const routes = [
     {path: '/register', name: 'Register', component: Register},
     {path: '/login', name: 'Login', component: Login},
     {path: '/map', name: 'Map', component: Map},
+    {path: '/block-ip', name: 'BlockIP', component: BlockIP},
     {path: '/:pathMatch(.*)*', redirect: '/'}
 ]
 const router = createRouter({

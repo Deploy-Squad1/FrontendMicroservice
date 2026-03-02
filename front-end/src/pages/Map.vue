@@ -203,6 +203,14 @@ const handleLogout = async () => {
         </div>
 
         <button
+            class="btn border-secondary text-muted"
+            @click="router.push('/block-ip')"
+            style="border-color: #b1861f; color: #b1861f;"
+        >
+          Block IP
+        </button>
+
+        <button
             class="btn btn-outline-warning"
             @click="handleLogout"
             style="border-color: #b1861f; color: #b1861f;"
