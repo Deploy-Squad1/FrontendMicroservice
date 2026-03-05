@@ -18,6 +18,10 @@ const newArtifact = ref({name: '', category: 'other', lat: 0, lng: 0});
 const showDeleteModal = ref(false);
 const artifactToDelete = ref(null);
 
+const showArtifactSidebar = ref(false);
+const selectedArtifact = ref(null);
+const photoFile = ref(null);
+
 const selectedFilter = ref('');
 
 const errorMessage = ref('');
@@ -137,18 +141,27 @@ const addMarkerToMap = (artifact) => {
   const icon = categoryIcons[artifact.category] || categoryIcons['other'];
 
   const marker = L.marker([artifact.lat, artifact.lng], {icon: icon}).addTo(markerGroup);
+  artifact.marker = marker;
 
-  marker.bindPopup(`
-    <b>${artifact.name}</b><br>
-    Category: ${artifact.category}<br>
-    Coordinates: ${artifact.lat.toFixed(4)}, ${artifact.lng.toFixed(4)}
-  `);
-
-  marker.on('contextmenu', () => {
+  marker.on('click', async () => {
     errorMessage.value = '';
-    artifactToDelete.value = {id: artifact.id, name: artifact.name, marker: marker};
-    showDeleteModal.value = true;
+    selectedArtifact.value = artifact;
+    showArtifactSidebar.value = true;
+
+    await nextTick();
+    map.value.invalidateSize();
+    map.value.panTo([artifact.lat, artifact.lng]);
   });
+};
+
+const DeleteFromSidebar = () => {
+  errorMessage.value = '';
+  artifactToDelete.value = {
+    id: selectedArtifact.value.id,
+    name: selectedArtifact.value.name,
+    marker: selectedArtifact.value.marker
+  };
+  showDeleteModal.value = true;
 };
 
 const confirmDelete = async () => {
@@ -156,11 +169,18 @@ const confirmDelete = async () => {
   errorMessage.value = '';
 
   try {
-    await mapApi.delete(`/artifacts/${artifactToDelete.value.id}`);
+    const idToDelete = artifactToDelete.value.id;
+
+    await mapApi.delete(`/artifacts/${idToDelete}`);
 
     markerGroup.removeLayer(artifactToDelete.value.marker);
 
     showDeleteModal.value = false;
+
+    if (selectedArtifact.value?.id === idToDelete) {
+      closeSidebar();
+    }
+
     artifactToDelete.value = null;
   } catch (error) {
     console.error('Error deleting artifact:', error);
@@ -170,6 +190,76 @@ const confirmDelete = async () => {
       errorMessage.value = 'Unable to remove artifact. Check connection.';
     }
     showDeleteModal.value = false;
+  }
+};
+
+const closeSidebar = async () => {
+  showArtifactSidebar.value = false;
+  selectedArtifact.value = null;
+  photoFile.value = null;
+
+  await nextTick();
+  map.value.invalidateSize();
+};
+
+const handleFileSelect = (event) => {
+  photoFile.value = event.target.files[0];
+};
+
+const uploadPhoto = async () => {
+  if (!photoFile.value || !selectedArtifact.value) return;
+  errorMessage.value = '';
+
+  const formData = new FormData();
+  formData.append('photo', photoFile.value);
+
+  try {
+    const response = await mapApi.post(`/artifacts/${selectedArtifact.value.id}/photo`, formData, {
+      headers: {'Content-Type': 'multipart/form-data'}
+    });
+
+    selectedArtifact.value.photo_url = response.data.photo_url;
+    photoFile.value = null;
+  } catch (error) {
+    console.error('Upload error:', error);
+    if (error.response?.status === 403) {
+      errorMessage.value = 'Access Denied: Only the creator of this artifact can upload an evidence photo!';
+    } else {
+      errorMessage.value = 'Failed to upload photo. File might be too large.';
+    }
+  }
+};
+
+const toggleConfirmation = async () => {
+  if (!selectedArtifact.value) return;
+  errorMessage.value = '';
+
+  if (selectedArtifact.value.has_confirmed) {
+    try {
+      await mapApi.delete(`/artifacts/${selectedArtifact.value.id}/unconfirm`);
+
+      selectedArtifact.value.confirmations = Math.max(0, (selectedArtifact.value.confirmations || 0) - 1);
+      selectedArtifact.value.has_confirmed = false;
+    } catch (error) {
+      console.error('Error removing confirmation:', error);
+      errorMessage.value = 'Failed to remove confirmation.';
+    }
+  } else {
+    try {
+      await mapApi.post(`/artifacts/${selectedArtifact.value.id}/confirm`);
+
+      selectedArtifact.value.confirmations = (selectedArtifact.value.confirmations || 0) + 1;
+      selectedArtifact.value.has_confirmed = true;
+    } catch (error) {
+      if (error.response?.status === 409) {
+        selectedArtifact.value.has_confirmed = true;
+        errorMessage.value = 'You already confirmed this finding. Click again if you want to remove it.';
+      } else if (error.response?.status === 403) {
+        errorMessage.value = 'You cannot confirm your own artifact!';
+      } else {
+        errorMessage.value = 'Failed to confirm artifact.';
+      }
+    }
   }
 };
 
@@ -186,7 +276,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <div class="container mt-4 position-relative">
+  <div class="container-fluid px-4 mt-4 position-relative">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2>Map of artifacts</h2>
 
@@ -202,19 +292,17 @@ const handleLogout = async () => {
           </select>
         </div>
 
-        <button
-            class="btn border-secondary text-muted"
-            @click="router.push('/block-ip')"
-            style="border-color: #b1861f; color: #b1861f;"
-        >
+        <button class="btn border-secondary text-muted" @click="router.push('/block-ip')"
+                style="border-color: #b1861f; color: #b1861f;">
           Block IP
         </button>
 
-        <button
-            class="btn btn-outline-warning"
-            @click="handleLogout"
-            style="border-color: #b1861f; color: #b1861f;"
-        >
+        <button class="btn border-secondary text-muted" @click="router.push('/send-invite')"
+                style="border-color: #b1861f; color: #b1861f;">
+          Send Invite
+        </button>
+
+        <button class="btn btn-outline-warning" @click="handleLogout" style="border-color: #b1861f; color: #b1861f;">
           Logout
         </button>
       </div>
@@ -225,7 +313,77 @@ const handleLogout = async () => {
       <button type="button" class="btn-close" @click="errorMessage = ''" aria-label="Close"></button>
     </div>
 
-    <div id="map" style="height: 800px; width: 100%; border-radius: 8px; z-index: 1;"></div>
+    <div class="d-flex w-100 bg-dark"
+         style="height: 800px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); border: 1px solid #333;">
+
+      <div
+          v-if="showArtifactSidebar && selectedArtifact"
+          class="h-100 bg-dark text-light d-flex flex-column flex-shrink-0"
+          style="width: 380px; border-right: 2px solid #b1861f; z-index: 2;"
+      >
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary"
+             style="background-color: #1a1a1a;">
+          <h5 class="mb-0 text-warning text-truncate" style="max-width: 70%;">Name: {{ selectedArtifact.name }}</h5>
+          <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-sm btn-outline-danger me-3" @click="DeleteFromSidebar"
+                    style="padding: 0.1rem 0.4rem;" title="Delete Artifact">Delete
+            </button>
+            <button type="button" class="btn-close btn-close-white" @click="closeSidebar" aria-label="Close"></button>
+          </div>
+        </div>
+
+        <div class="p-4 flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
+          <div class="mb-4">
+            <span class="text-secondary small d-block">Category: <span
+                class="text-light fw-bold">{{ selectedArtifact.category }}</span></span>
+            <span class="text-secondary small d-block">Coordinates: <span
+                class="text-light">{{ selectedArtifact.lat.toFixed(4) }}, {{
+                selectedArtifact.lng.toFixed(4)
+              }}</span></span>
+          </div>
+
+          <div v-if="selectedArtifact.photo_url" class="mb-4 text-center">
+            <img :src="selectedArtifact.photo_url" alt="Artifact Evidence"
+                 class="img-fluid rounded border border-secondary"
+                 style="width: 100%; max-height: 350px; object-fit: cover;">
+          </div>
+
+          <div v-else class="mb-4 p-3 border border-secondary rounded bg-secondary bg-opacity-25">
+            <label class="form-label text-light small fw-bold mb-2">Upload Evidence:</label>
+            <input type="file" class="form-control form-control-sm bg-dark text-light border-secondary mb-3"
+                   accept="image/*" @change="handleFileSelect">
+            <button class="btn btn-outline-warning btn-sm w-100 fw-bold" @click="uploadPhoto" :disabled="!photoFile"
+                    style="border-color: #b1861f; color: #b1861f;">
+              Upload picture
+            </button>
+          </div>
+
+          <div class="mt-auto"></div>
+
+          <div class="pt-3 border-top border-secondary">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="text-light fs-6 ">
+                <strong>Confirmations:</strong> <strong class="text-warning fs-5">{{
+                  selectedArtifact.confirmations || 0
+                }}</strong>
+              </span>
+            </div>
+
+            <button
+                class="btn w-100 fw-bold shadow-sm p-2"
+                :class="selectedArtifact.has_confirmed ? 'btn-outline-danger' : 'btn-warning'"
+                @click="toggleConfirmation"
+                :style="selectedArtifact.has_confirmed ? '' : 'background-color: #b1861f; color: white; border: none; letter-spacing: 0.5px;'"
+            >
+              {{ selectedArtifact.has_confirmed ? 'REMOVE CONFIRMATION' : 'VERIFY FINDING' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="map" class="flex-grow-1 h-100" style="z-index: 1;"></div>
+
+    </div>
 
     <div
         v-if="showForm"
