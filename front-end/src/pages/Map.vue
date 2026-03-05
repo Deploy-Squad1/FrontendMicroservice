@@ -186,72 +186,16 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <div class="container mt-4 position-relative">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Map of artifacts</h2>
+  <div class="container-fluid bg-black d-flex justify-content-center align-items-center min-vh-100 font-monospace">
+    <div class="container mt-4 position-relative">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Map of artifacts</h2>
 
-      <div class="d-flex align-items-center gap-3">
-        <div class="d-flex align-items-center">
-          <label class="me-2 fw-bold">Filter:</label>
-          <select v-model="selectedFilter" class="form-select bg-dark text-light border-secondary" style="width: auto;">
-            <option value="">All Categories</option>
-            <option value="yeti">Yetti</option>
-            <option value="ghost">Ghost</option>
-            <option value="alien">Alien</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <button
-            class="btn border-secondary text-muted"
-            @click="router.push('/block-ip')"
-            style="border-color: #b1861f; color: #b1861f;"
-        >
-          Block IP
-        </button>
-
-        <button
-            class="btn btn-outline-warning"
-            @click="handleLogout"
-            style="border-color: #b1861f; color: #b1861f;"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-
-    <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-      {{ errorMessage }}
-      <button type="button" class="btn-close" @click="errorMessage = ''" aria-label="Close"></button>
-    </div>
-
-    <div id="map" style="height: 800px; width: 100%; border-radius: 8px; z-index: 1;"></div>
-
-    <div
-        v-if="showForm"
-        class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-        style="background: rgba(0, 0, 0, 0.6); z-index: 1000; border-radius: 8px;"
-    >
-      <div class="card bg-dark text-light shadow-lg" style="width: 22rem; border: 1px solid #444;">
-        <div class="card-body">
-          <h4 class="card-title text-warning mb-1">New artifact</h4>
-          <p class="card-text text-secondary mb-3" style="font-size: 0.85rem;">
-            Coordinates: {{ newArtifact.lat.toFixed(4) }}, {{ newArtifact.lng.toFixed(4) }}
-          </p>
-
-          <div class="mb-3">
-            <label class="form-label">Name:</label>
-            <input
-                v-model="newArtifact.name"
-                type="text"
-                class="form-control bg-secondary text-light border-0"
-                placeholder="Example: Snowy Footprint"
-            />
-          </div>
-
-          <div class="mb-4">
-            <label class="form-label">Category:</label>
-            <select v-model="newArtifact.category" class="form-select bg-secondary text-light border-0">
+        <div class="d-flex align-items-center gap-3">
+          <div class="d-flex align-items-center">
+            <label class="me-2 fw-bold">Filter:</label>
+            <select v-model="selectedFilter" class="form-select bg-dark text-light border-secondary" style="width: auto;">
+              <option value="">All Categories</option>
               <option value="yeti">Yetti</option>
               <option value="ghost">Ghost</option>
               <option value="alien">Alien</option>
@@ -259,36 +203,102 @@ const handleLogout = async () => {
             </select>
           </div>
 
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-outline-secondary text-light" @click="showForm = false">Cancel</button>
-            <button class="btn btn-outline-warning" @click="submitArtifact"
-                    style="border-color: #b1861f; color: #b1861f;">Submit
-            </button>
+          <button
+              class="btn border-secondary text-muted"
+              @click="router.push('/voting')"
+              style="border-color: #b1861f; color: #b1861f;"
+          >
+            Votings
+          </button>
+
+          <button
+              class="btn border-secondary text-muted"
+              @click="router.push('/block-ip')"
+              style="border-color: #b1861f; color: #b1861f;"
+          >
+            Block IP
+          </button>
+
+          <button
+              class="btn btn-outline-warning"
+              @click="handleLogout"
+              style="border-color: #b1861f; color: #b1861f;"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" @click="errorMessage = ''" aria-label="Close"></button>
+      </div>
+
+      <div id="map" style="height: 700px; width: 100%; border-radius: 8px; z-index: 1;"></div>
+
+      <div
+          v-if="showForm"
+          class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style="background: rgba(0, 0, 0, 0.6); z-index: 1000; border-radius: 8px;"
+      >
+        <div class="card bg-dark text-light shadow-lg" style="width: 22rem; border: 1px solid #444;">
+          <div class="card-body">
+            <h4 class="card-title text-warning mb-1">New artifact</h4>
+            <p class="card-text text-secondary mb-3" style="font-size: 0.85rem;">
+              Coordinates: {{ newArtifact.lat.toFixed(4) }}, {{ newArtifact.lng.toFixed(4) }}
+            </p>
+
+            <div class="mb-3">
+              <label class="form-label">Name:</label>
+              <input
+                  v-model="newArtifact.name"
+                  type="text"
+                  class="form-control bg-secondary text-light border-0"
+                  placeholder="Example: Snowy Footprint"
+              />
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Category:</label>
+              <select v-model="newArtifact.category" class="form-select bg-secondary text-light border-0">
+                <option value="yeti">Yetti</option>
+                <option value="ghost">Ghost</option>
+                <option value="alien">Alien</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-outline-secondary text-light" @click="showForm = false">Cancel</button>
+              <button class="btn btn-outline-warning" @click="submitArtifact"
+                      style="border-color: #b1861f; color: #b1861f;">Submit
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div
-        v-if="showDeleteModal"
-        class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-        style="background: rgba(0, 0, 0, 0.7); z-index: 1000; border-radius: 8px;"
-    >
-      <div class="card bg-dark text-light shadow-lg text-center p-3" style="width: 20rem; border: 1px solid #b1861f;">
-        <div class="card-body">
-          <h4 class="text-warning mb-3">Delete Artifact?</h4>
-          <p>Are you sure you want to delete <b>"{{ artifactToDelete?.name }}"</b>?</p>
-          <p class="text-secondary" style="font-size: 0.85rem;">This action cannot be undone.</p>
+      <div
+          v-if="showDeleteModal"
+          class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style="background: rgba(0, 0, 0, 0.7); z-index: 1000; border-radius: 8px;"
+      >
+        <div class="card bg-dark text-light shadow-lg text-center p-3" style="width: 20rem; border: 1px solid #b1861f;">
+          <div class="card-body">
+            <h4 class="text-warning mb-3">Delete Artifact?</h4>
+            <p>Are you sure you want to delete <b>"{{ artifactToDelete?.name }}"</b>?</p>
+            <p class="text-secondary" style="font-size: 0.85rem;">This action cannot be undone.</p>
 
-          <div class="d-flex justify-content-center gap-3 mt-4">
-            <button class="btn btn-secondary" @click="showDeleteModal = false">Cancel</button>
-            <button class="btn btn-outline-warning" @click="confirmDelete"
-                    style="border-color: #b1861f; color: #b1861f;">Yes, Delete
-            </button>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+              <button class="btn btn-secondary" @click="showDeleteModal = false">Cancel</button>
+              <button class="btn btn-outline-warning" @click="confirmDelete"
+                      style="border-color: #b1861f; color: #b1861f;">Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
 </template>
