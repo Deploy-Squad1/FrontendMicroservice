@@ -17,6 +17,7 @@ const handleLogin = async () => {
     })
     sessionStorage.removeItem('passcode');
     localStorage.setItem('isAuthenticated', 'true')
+    localStorage.setItem('role', response.data.groups[0].name)
     router.push('/map')
   } catch (error) {
     errorMessage.value = 'Invalid credentials.'
