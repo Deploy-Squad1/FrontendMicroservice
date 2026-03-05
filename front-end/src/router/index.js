@@ -22,15 +22,15 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-        try {
-            await api.get('/ip/check/');
-        } catch (error) {
-            if (error.response.status === 403) {
-                window.location.href = error.response.data['redirect'];
-                return false;
-            }
-            throw error;
+    try {
+        await api.get('/ip/check/');
+    } catch (error) {
+        if (error.response.status === 403) {
+            window.location.href = error.response.data['redirect'];
+            return false;
         }
+        throw error;
+    }
 
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
     const publicPages = ['Gatekeeper', 'Login', 'Register'];
