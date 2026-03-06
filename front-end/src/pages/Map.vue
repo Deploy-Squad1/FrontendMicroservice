@@ -1,5 +1,5 @@
 <script setup>
-import{ref, shallowRef, onMounted, watch} from 'vue';
+import{ref, shallowRef, onMounted, watch, nextTick} from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import {useRouter} from 'vue-router';
@@ -299,15 +299,6 @@ const handleLogout = async () => {
 
         <button class="btn border-secondary text-muted" @click="router.push('/send-invite')"
                 style="border-color: #b1861f; color: #b1861f;">
-          Send Invite
-        </button>
-
-        <button class="btn btn-outline-warning" @click="handleLogout" style="border-color: #b1861f; color: #b1861f;">
-        <button
-            class="btn border-secondary text-muted"
-            @click="router.push('/send-invite')"
-            style="border-color: #b1861f; color: #b1861f;"
-        >
           Send Invite
         </button>
 
