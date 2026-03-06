@@ -36,7 +36,7 @@ const setupInterceptors = (axiosInstance) => {
                     return axiosInstance(originalRequest);
                 } catch (refreshError) {
                     localStorage.removeItem('isAuthenticated');
-                    router.push('/login');
+                    router.push('/');
                     return Promise.reject(refreshError);
                 }
         }
