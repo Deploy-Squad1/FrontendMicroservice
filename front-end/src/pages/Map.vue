@@ -240,6 +240,14 @@ const handleLogout = async () => {
         </button>
 
         <button
+            class="btn border-secondary text-muted"
+            @click="router.push('/send-invite')"
+            style="border-color: #b1861f; color: #b1861f;"
+        >
+          Send Invite
+        </button>
+
+        <button
             class="btn btn-outline-warning"
             @click="handleLogout"
             style="border-color: #b1861f; color: #b1861f;"
