@@ -1,34 +1,30 @@
 <script setup>
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import router from '@/router/index.js'
+import {votingApi} from "@/api.js";
 
 const errorMessage = ref('')
+const votings = ref([])
 
-const votings = ref([
-  {
-    id: 1,
-    title: 'Test title 1',
-    description: 'Test description 1',
-    ends_at: '2026-03-10T20:00:00',
-    user_vote: null,
-  },
-  {
-    id: 2,
-    title: 'Test title 2',
-    description: 'Test description 2',
-    ends_at: '2026-03-10T20:00:00',
-    user_vote: 'yes',
-  },
-  {
-    id: 3,
-    title: 'Test title 3',
-    description: 'Test description 3',
-    ends_at: '2026-03-10T20:00:00',
-    user_vote: 'no',
-  },
-])
+const fetchVotings = async () => {
+  try {
+    const response = await votingApi.get('/polls')
+    votings.value = response.data
+  } catch (err) {
+    errorMessage.value = 'Failed to load votings.'
+  }
 
-const castVote = (votingId, choice) => {
+  votings.value.map(function (voting) {
+    if(voting.poll_type === "upgrade"){
+      voting.title = `Promote user ${ voting.target_username }`
+    } else if(voting.poll_type === "kick") {
+      voting.title = `Kick user ${ voting.target_username }`
+    }
+    return voting
+  })
+}
+
+const castVote = async (votingId, choice) => {
   const voting = votings.value.find(v => v.id === votingId)
   if (!voting) return
 
@@ -44,6 +40,8 @@ const castVote = (votingId, choice) => {
     voting.user_vote = choice
   }
 }
+
+onMounted(fetchVotings)
 </script>
 
 <template>
@@ -85,25 +83,25 @@ const castVote = (votingId, choice) => {
           <p class="text-secondary small mb-3">{{ voting.description }}</p>
 
           <div class="text-muted small mb-3">
-            Ends: {{ new Date(voting.ends_at).toLocaleString() }}
+            Ends: {{ new Date(voting.expires_at).toLocaleString() }}
           </div>
 
           <div class="d-flex gap-2 mt-1">
             <button
                 class="btn btn-sm text-uppercase fw-bold"
-                :style="voting.user_vote === 'yes'
+                :style="voting.user_vote === true
                 ? 'background-color: #b1861f; color: #000; border-color: #b1861f; letter-spacing: 1px;'
                 : 'background-color: transparent; color: #b1861f; border-color: #b1861f; letter-spacing: 1px;'"
-                @click="castVote(voting.id, 'yes')"
+                @click="castVote(voting.id, true)"
             >
               Yes
             </button>
             <button
                 class="btn btn-sm text-uppercase fw-bold"
-                :style="voting.user_vote === 'no'
+                :style="voting.user_vote === false
                 ? 'background-color: #6c757d; color: #fff; border-color: #6c757d; letter-spacing: 1px;'
                 : 'background-color: transparent; color: #6c757d; border-color: #6c757d; letter-spacing: 1px;'"
-                @click="castVote(voting.id, 'no')"
+                @click="castVote(voting.id, false)"
             >
               No
             </button>

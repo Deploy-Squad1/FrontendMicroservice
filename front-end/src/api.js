@@ -22,6 +22,13 @@ const emailApi = axios.create({
     },
     withCredentials: true,
 });
+const votingApi = axios.create({
+    baseURL: 'http://localhost:8085/api',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: true,
+});
 
 const setupInterceptors = (axiosInstance) => {
     axiosInstance.interceptors.response.use(
@@ -46,4 +53,5 @@ const setupInterceptors = (axiosInstance) => {
 setupInterceptors(api);
 setupInterceptors(mapApi);
 setupInterceptors(emailApi);
-export { api, mapApi, emailApi};
+setupInterceptors(votingApi);
+export { api, mapApi, emailApi, votingApi };
