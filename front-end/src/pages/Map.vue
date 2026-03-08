@@ -1,5 +1,5 @@
 <script setup>
-import{ref, shallowRef, onMounted, watch} from 'vue';
+import {ref, shallowRef, onMounted, watch} from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import {useRouter} from 'vue-router';
@@ -18,9 +18,13 @@ const newArtifact = ref({name: '', category: 'other', lat: 0, lng: 0});
 const showDeleteModal = ref(false);
 const artifactToDelete = ref(null);
 
+const showDeleteAllModal = ref(false);
+
 const selectedFilter = ref('');
 
 const errorMessage = ref('');
+
+const userRole = localStorage.getItem('role')
 
 const categoryIcons = {
   ghost: L.divIcon({
@@ -133,6 +137,22 @@ const submitArtifact = async () => {
   }
 };
 
+const confirmDeleteAll = async () => {
+  errorMessage.value = '';
+  try {
+    await api.delete('/database/delete/');
+    await handleLogout();
+  } catch (error) {
+    console.error('Error deleting all artifacts:', error);
+    if (error.response?.status === 403) {
+      errorMessage.value = 'You do not have permission to delete all data (Gold role required).';
+    } else {
+      errorMessage.value = 'Unable to delete the data.';
+    }
+    showDeleteAllModal.value = false;
+  }
+};
+
 const addMarkerToMap = (artifact) => {
   const icon = categoryIcons[artifact.category] || categoryIcons['other'];
 
@@ -177,6 +197,7 @@ const handleLogout = async () => {
   try {
     await api.post('/logout/', {});
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('role');
   } catch (error) {
     console.error('Logout error:', error);
   } finally {
@@ -194,7 +215,8 @@ const handleLogout = async () => {
         <div class="d-flex align-items-center gap-3">
           <div class="d-flex align-items-center">
             <label class="me-2 fw-bold">Filter:</label>
-            <select v-model="selectedFilter" class="form-select bg-dark text-light border-secondary" style="width: auto;">
+            <select v-model="selectedFilter" class="form-select bg-dark text-light border-secondary"
+                    style="width: auto;">
               <option value="">All Categories</option>
               <option value="yeti">Yetti</option>
               <option value="ghost">Ghost</option>
@@ -217,6 +239,23 @@ const handleLogout = async () => {
               style="border-color: #b1861f; color: #b1861f;"
           >
             Block IP
+          </button>
+
+          <button
+              v-if="userRole === 'Gold'"
+              class="btn border-secondary text-muted"
+              @click="router.push('/send-invite')"
+              style="border-color: #b1861f; color: #b1861f;"
+          >
+            Send Invite
+          </button>
+
+          <button
+              v-if="userRole === 'Gold'"
+              class="btn btn-outline-danger"
+              @click="showDeleteAllModal = true"
+          >
+            Delete All Data
           </button>
 
           <button
@@ -294,6 +333,24 @@ const handleLogout = async () => {
               <button class="btn btn-outline-warning" @click="confirmDelete"
                       style="border-color: #b1861f; color: #b1861f;">Yes, Delete
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+          v-if="showDeleteAllModal"
+          class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style="background: rgba(0, 0, 0, 0.7); z-index: 1000; border-radius: 8px;"
+      >
+        <div class="card bg-dark text-light shadow-lg text-center p-3" style="width: 22rem; border: 1px solid #dc3545;">
+          <div class="card-body">
+            <h4 class="text-danger mb-3">Delete All Data?</h4>
+            <p>You are about to <b>permanently delete all data</b> of the website.</p>
+
+            <div class="d-flex justify-content-center gap-3 mt-4">
+              <button class="btn btn-secondary" @click="showDeleteAllModal = false">Cancel</button>
+              <button class="btn btn-danger" @click="confirmDeleteAll">Yes, Delete All</button>
             </div>
           </div>
         </div>

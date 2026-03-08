@@ -1,31 +1,27 @@
 <script setup>
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {api}  from '../api.js'
-const username = ref('')
-const password = ref('')
+import {emailApi}  from '../api.js'
+const Email = ref('')
+const Link = ref('')
 const errorMessage = ref('')
 const router = useRouter()
-const passcode = sessionStorage.getItem('passcode')
-const handleLogin = async () => {
+const handleInvitations = async () => {
   try {
     errorMessage.value = ''
-    const response = await api.post('/login/', {
-      username: username.value,
-      password: password.value,
-      passcode: passcode
+    await emailApi.post('/send-invite', {
+      to_email: Email.value,
+      invite_link: Link.value
     })
-    sessionStorage.removeItem('passcode');
-    localStorage.setItem('isAuthenticated', 'true')
-    localStorage.setItem('role', response.data.groups[0].name)
     router.push('/map')
   } catch (error) {
-    errorMessage.value = 'Invalid credentials.'
+    errorMessage.value = 'Failed to send invitation.'
     console.error(error)
   }
 }
-</script>
 
+
+</script>
 
 <template>
   <div class="container-fluid bg-black d-flex justify-content-center align-items-center min-vh-100 font-monospace">
@@ -37,25 +33,25 @@ const handleLogin = async () => {
       </h2>
 
       <p class="text-secondary text-center mb-5 small">
-        Welcome back! Please enter your credentials to access the dashboard.
+        Send an invitation to a new member by entering their email and a unique link.
       </p>
 
-      <form @submit.prevent="handleLogin">
+      <form @submit.prevent="handleInvitations">
         <div class="mb-4">
           <input
               type="text"
               class="form-control bg-transparent border-secondary text-light shadow-none p-3"
-              placeholder="Username"
-              v-model="username"
+              placeholder="Email"
+              v-model="Email"
               required
           />
         </div>
         <div class="mb-4">
           <input
-              type="password"
+              type="text"
               class="form-control bg-transparent border-secondary text-light shadow-none p-3"
-              placeholder="Password"
-              v-model="password"
+              placeholder="Link"
+              v-model="Link"
               required
           />
         </div>
@@ -67,13 +63,9 @@ const handleLogin = async () => {
             class="btn btn-outline-warning w-100 text-uppercase fw-bold p-3"
             style="letter-spacing: 2px; color: #b1861f; border-color: #b1861f;"
         >
-          Login
+          Send Invitation
         </button>
       </form>
-
-      <div class="text-center mt-4">
-        <router-link to="/register" class="text-secondary small">Don't have an account? Register</router-link>
-      </div>
     </div>
   </div>
 </template>
