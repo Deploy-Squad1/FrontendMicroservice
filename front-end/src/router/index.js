@@ -33,7 +33,7 @@ router.beforeEach(async (to, from, next) => {
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
     const publicPages = ['Gatekeeper', 'Login', 'Register'];
     if (!publicPages.includes(to.name) && !isAuthenticated) {
-        next('/login/');
+        next('/');
     }
     if(to.path === '/login') {
         const passcode = sessionStorage.getItem('passcode');
