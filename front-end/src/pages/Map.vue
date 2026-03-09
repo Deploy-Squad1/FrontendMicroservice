@@ -16,6 +16,7 @@ const showForm = ref(false);
 const newArtifact = ref({name: '', category: 'other', lat: 0, lng: 0});
 
 const showDeleteModal = ref(false);
+const showDeleteAllModal = ref(false);
 const artifactToDelete = ref(null);
 
 
@@ -297,152 +298,17 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <div class="container-fluid px-4 mt-4 position-relative">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Map of artifacts</h2>
+  <div class="container-fluid bg-black d-flex justify-content-center align-items-center min-vh-100 font-monospace">
+    <div class="container-fluid px-4 mt-4 position-relative">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Map of artifacts</h2>
 
-      <div class="d-flex align-items-center gap-3">
-        <div class="d-flex align-items-center">
-          <label class="me-2 fw-bold">Filter:</label>
-          <select v-model="selectedFilter" class="form-select bg-dark text-light border-secondary" style="width: auto;">
-            <option value="">All Categories</option>
-            <option value="yeti">Yetti</option>
-            <option value="ghost">Ghost</option>
-            <option value="alien">Alien</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <button class="btn border-secondary text-muted" @click="router.push('/block-ip')"
-                style="border-color: #b1861f; color: #b1861f;">
-          Block IP
-        </button>
-
-        <button
-            v-if="userRole === 'Gold'"
-            class="btn btn-outline-danger"
-            @click="showDeleteAllModal = true"
-        >
-          Delete All Data
-        </button>
-
-        <button class="btn border-secondary text-muted" @click="router.push('/send-invite')"
-                style="border-color: #b1861f; color: #b1861f;">
-          Send Invite
-        </button>
-
-        <button
-            class="btn btn-outline-warning"
-            @click="handleLogout"
-            style="border-color: #b1861f; color: #b1861f;"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-
-    <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-      {{ errorMessage }}
-      <button type="button" class="btn-close" @click="errorMessage = ''" aria-label="Close"></button>
-    </div>
-
-    <div class="d-flex w-100 bg-dark"
-         style="height: 800px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); border: 1px solid #333;">
-
-      <div
-          v-if="showArtifactSidebar && selectedArtifact"
-          class="h-100 bg-dark text-light d-flex flex-column flex-shrink-0"
-          style="width: 380px; border-right: 2px solid #b1861f; z-index: 2;"
-      >
-        <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary"
-             style="background-color: #1a1a1a;">
-          <h5 class="mb-0 text-warning text-truncate" style="max-width: 70%;">Name: {{ selectedArtifact.name }}</h5>
+        <div class="d-flex align-items-center gap-3">
           <div class="d-flex align-items-center">
-            <button type="button" class="btn btn-sm btn-outline-danger me-3" @click="DeleteFromSidebar"
-                    style="padding: 0.1rem 0.4rem;" title="Delete Artifact">Delete
-            </button>
-            <button type="button" class="btn-close btn-close-white" @click="closeSidebar" aria-label="Close"></button>
-          </div>
-        </div>
-
-        <div class="p-4 flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
-          <div class="mb-4">
-            <span class="text-secondary small d-block">Category: <span
-                class="text-light fw-bold">{{ selectedArtifact.category }}</span></span>
-            <span class="text-secondary small d-block">Coordinates: <span
-                class="text-light">{{ selectedArtifact.lat.toFixed(4) }}, {{
-                selectedArtifact.lng.toFixed(4)
-              }}</span></span>
-          </div>
-
-          <div v-if="selectedArtifact.photo_url" class="mb-4 text-center">
-            <img :src="selectedArtifact.photo_url" alt="Artifact Evidence"
-                 class="img-fluid rounded border border-secondary"
-                 style="width: 100%; max-height: 350px; object-fit: cover;">
-          </div>
-
-          <div v-else class="mb-4 p-3 border border-secondary rounded bg-secondary bg-opacity-25">
-            <label class="form-label text-light small fw-bold mb-2">Upload Evidence:</label>
-            <input type="file" class="form-control form-control-sm bg-dark text-light border-secondary mb-3"
-                   accept="image/*" @change="handleFileSelect">
-            <button class="btn btn-outline-warning btn-sm w-100 fw-bold" @click="uploadPhoto" :disabled="!photoFile"
-                    style="border-color: #b1861f; color: #b1861f;">
-              Upload picture
-            </button>
-          </div>
-
-          <div class="mt-auto"></div>
-
-          <div class="pt-3 border-top border-secondary">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="text-light fs-6 ">
-                <strong>Confirmations:</strong> <strong class="text-warning fs-5">{{
-                  selectedArtifact.confirmations || 0
-                }}</strong>
-              </span>
-            </div>
-
-            <button
-                class="btn w-100 fw-bold shadow-sm p-2"
-                :class="selectedArtifact.has_confirmed ? 'btn-outline-danger' : 'btn-warning'"
-                @click="toggleConfirmation"
-                :style="selectedArtifact.has_confirmed ? '' : 'background-color: #b1861f; color: white; border: none; letter-spacing: 0.5px;'"
-            >
-              {{ selectedArtifact.has_confirmed ? 'REMOVE CONFIRMATION' : 'VERIFY FINDING' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div id="map" class="flex-grow-1 h-100" style="z-index: 1;"></div>
-
-    </div>
-
-    <div
-        v-if="showForm"
-        class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-        style="background: rgba(0, 0, 0, 0.6); z-index: 1000; border-radius: 8px;"
-    >
-      <div class="card bg-dark text-light shadow-lg" style="width: 22rem; border: 1px solid #444;">
-        <div class="card-body">
-          <h4 class="card-title text-warning mb-1">New artifact</h4>
-          <p class="card-text text-secondary mb-3" style="font-size: 0.85rem;">
-            Coordinates: {{ newArtifact.lat.toFixed(4) }}, {{ newArtifact.lng.toFixed(4) }}
-          </p>
-
-          <div class="mb-3">
-            <label class="form-label">Name:</label>
-            <input
-                v-model="newArtifact.name"
-                type="text"
-                class="form-control bg-secondary text-light border-0"
-                placeholder="Example: Snowy Footprint"
-            />
-          </div>
-
-          <div class="mb-4">
-            <label class="form-label">Category:</label>
-            <select v-model="newArtifact.category" class="form-select bg-secondary text-light border-0">
+            <label class="me-2 fw-bold">Filter:</label>
+            <select v-model="selectedFilter" class="form-select bg-dark text-light border-secondary"
+                    style="width: auto;">
+              <option value="">All Categories</option>
               <option value="yeti">Yetti</option>
               <option value="ghost">Ghost</option>
               <option value="alien">Alien</option>
@@ -450,54 +316,200 @@ const handleLogout = async () => {
             </select>
           </div>
 
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-outline-secondary text-light" @click="showForm = false">Cancel</button>
-            <button class="btn btn-outline-warning" @click="submitArtifact"
-                    style="border-color: #b1861f; color: #b1861f;">Submit
-            </button>
+          <button
+              class="btn border-secondary text-muted"
+              @click="router.push('/voting')"
+              style="border-color: #b1861f; color: #b1861f;"
+          >
+            Votings
+          </button>
+
+          <button class="btn border-secondary text-muted" @click="router.push('/block-ip')"
+                  style="border-color: #b1861f; color: #b1861f;">
+            Block IP
+          </button>
+
+          <button
+              v-if="userRole === 'Gold'"
+              class="btn btn-outline-danger"
+              @click="showDeleteAllModal = true"
+          >
+            Delete All Data
+          </button>
+
+          <button class="btn border-secondary text-muted" @click="router.push('/send-invite')"
+                  style="border-color: #b1861f; color: #b1861f;">
+            Send Invite
+          </button>
+
+          <button
+              class="btn btn-outline-warning"
+              @click="handleLogout"
+              style="border-color: #b1861f; color: #b1861f;"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" @click="errorMessage = ''" aria-label="Close"></button>
+      </div>
+
+      <div class="d-flex w-100 bg-dark"
+           style="height: 700px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); border: 1px solid #333;">
+
+        <div
+            v-if="showArtifactSidebar && selectedArtifact"
+            class="h-100 bg-dark text-light d-flex flex-column flex-shrink-0"
+            style="width: 380px; border-right: 2px solid #b1861f; z-index: 2;"
+        >
+          <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary"
+               style="background-color: #1a1a1a;">
+            <h5 class="mb-0 text-warning text-truncate" style="max-width: 70%;">Name: {{ selectedArtifact.name }}</h5>
+            <div class="d-flex align-items-center">
+              <button type="button" class="btn btn-sm btn-outline-danger me-3" @click="DeleteFromSidebar"
+                      style="padding: 0.1rem 0.4rem;" title="Delete Artifact">Delete
+              </button>
+              <button type="button" class="btn-close btn-close-white" @click="closeSidebar" aria-label="Close"></button>
+            </div>
+          </div>
+
+          <div class="p-4 flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
+            <div class="mb-4">
+            <span class="text-secondary small d-block">Category: <span
+                class="text-light fw-bold">{{ selectedArtifact.category }}</span></span>
+              <span class="text-secondary small d-block">Coordinates: <span
+                  class="text-light">{{ selectedArtifact.lat.toFixed(4) }}, {{
+                  selectedArtifact.lng.toFixed(4)
+                }}</span></span>
+            </div>
+
+            <div v-if="selectedArtifact.photo_url" class="mb-4 text-center">
+              <img :src="selectedArtifact.photo_url" alt="Artifact Evidence"
+                   class="img-fluid rounded border border-secondary"
+                   style="width: 100%; max-height: 350px; object-fit: cover;">
+            </div>
+
+            <div v-else class="mb-4 p-3 border border-secondary rounded bg-secondary bg-opacity-25">
+              <label class="form-label text-light small fw-bold mb-2">Upload Evidence:</label>
+              <input type="file" class="form-control form-control-sm bg-dark text-light border-secondary mb-3"
+                     accept="image/*" @change="handleFileSelect">
+              <button class="btn btn-outline-warning btn-sm w-100 fw-bold" @click="uploadPhoto" :disabled="!photoFile"
+                      style="border-color: #b1861f; color: #b1861f;">
+                Upload picture
+              </button>
+            </div>
+
+            <div class="mt-auto"></div>
+
+            <div class="pt-3 border-top border-secondary">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="text-light fs-6 ">
+                <strong>Confirmations:</strong> <strong class="text-warning fs-5">{{
+                  selectedArtifact.confirmations || 0
+                }}</strong>
+              </span>
+              </div>
+
+              <button
+                  class="btn w-100 fw-bold shadow-sm p-2"
+                  :class="selectedArtifact.has_confirmed ? 'btn-outline-danger' : 'btn-warning'"
+                  @click="toggleConfirmation"
+                  :style="selectedArtifact.has_confirmed ? '' : 'background-color: #b1861f; color: white; border: none; letter-spacing: 0.5px;'"
+              >
+                {{ selectedArtifact.has_confirmed ? 'REMOVE CONFIRMATION' : 'VERIFY FINDING' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="map" class="flex-grow-1 h-100" style="z-index: 1;"></div>
+
+      </div>
+
+      <div
+          v-if="showForm"
+          class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style="background: rgba(0, 0, 0, 0.6); z-index: 1000; border-radius: 8px;"
+      >
+        <div class="card bg-dark text-light shadow-lg" style="width: 22rem; border: 1px solid #444;">
+          <div class="card-body">
+            <h4 class="card-title text-warning mb-1">New artifact</h4>
+            <p class="card-text text-secondary mb-3" style="font-size: 0.85rem;">
+              Coordinates: {{ newArtifact.lat.toFixed(4) }}, {{ newArtifact.lng.toFixed(4) }}
+            </p>
+
+            <div class="mb-3">
+              <label class="form-label">Name:</label>
+              <input
+                  v-model="newArtifact.name"
+                  type="text"
+                  class="form-control bg-secondary text-light border-0"
+                  placeholder="Example: Snowy Footprint"
+              />
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Category:</label>
+              <select v-model="newArtifact.category" class="form-select bg-secondary text-light border-0">
+                <option value="yeti">Yetti</option>
+                <option value="ghost">Ghost</option>
+                <option value="alien">Alien</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-outline-secondary text-light" @click="showForm = false">Cancel</button>
+              <button class="btn btn-outline-warning" @click="submitArtifact"
+                      style="border-color: #b1861f; color: #b1861f;">Submit
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div
-        v-if="showDeleteModal"
-        class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-        style="background: rgba(0, 0, 0, 0.7); z-index: 1000; border-radius: 8px;"
-    >
-      <div class="card bg-dark text-light shadow-lg text-center p-3" style="width: 20rem; border: 1px solid #b1861f;">
-        <div class="card-body">
-          <h4 class="text-warning mb-3">Delete Artifact?</h4>
-          <p>Are you sure you want to delete <b>"{{ artifactToDelete?.name }}"</b>?</p>
-          <p class="text-secondary" style="font-size: 0.85rem;">This action cannot be undone.</p>
+      <div
+          v-if="showDeleteModal"
+          class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style="background: rgba(0, 0, 0, 0.7); z-index: 1000; border-radius: 8px;"
+      >
+        <div class="card bg-dark text-light shadow-lg text-center p-3" style="width: 20rem; border: 1px solid #b1861f;">
+          <div class="card-body">
+            <h4 class="text-warning mb-3">Delete Artifact?</h4>
+            <p>Are you sure you want to delete <b>"{{ artifactToDelete?.name }}"</b>?</p>
+            <p class="text-secondary" style="font-size: 0.85rem;">This action cannot be undone.</p>
 
-          <div class="d-flex justify-content-center gap-3 mt-4">
-            <button class="btn btn-secondary" @click="showDeleteModal = false">Cancel</button>
-            <button class="btn btn-outline-warning" @click="confirmDelete"
-                    style="border-color: #b1861f; color: #b1861f;">Yes, Delete
-            </button>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+              <button class="btn btn-secondary" @click="showDeleteModal = false">Cancel</button>
+              <button class="btn btn-outline-warning" @click="confirmDelete"
+                      style="border-color: #b1861f; color: #b1861f;">Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div
-        v-if="showDeleteAllModal"
-        class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-        style="background: rgba(0, 0, 0, 0.7); z-index: 1000; border-radius: 8px;"
-    >
-      <div class="card bg-dark text-light shadow-lg text-center p-3" style="width: 22rem; border: 1px solid #dc3545;">
-        <div class="card-body">
-          <h4 class="text-danger mb-3">Delete All Data?</h4>
-          <p>You are about to <b>permanently delete all data</b> of the website.</p>
+      <div
+          v-if="showDeleteAllModal"
+          class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style="background: rgba(0, 0, 0, 0.7); z-index: 1000; border-radius: 8px;"
+      >
+        <div class="card bg-dark text-light shadow-lg text-center p-3" style="width: 22rem; border: 1px solid #dc3545;">
+          <div class="card-body">
+            <h4 class="text-danger mb-3">Delete All Data?</h4>
+            <p>You are about to <b>permanently delete all data</b> of the website.</p>
 
-          <div class="d-flex justify-content-center gap-3 mt-4">
-            <button class="btn btn-secondary" @click="showDeleteAllModal = false">Cancel</button>
-            <button class="btn btn-danger" @click="confirmDeleteAll">Yes, Delete All</button>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+              <button class="btn btn-secondary" @click="showDeleteAllModal = false">Cancel</button>
+              <button class="btn btn-danger" @click="confirmDeleteAll">Yes, Delete All</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
 </template>

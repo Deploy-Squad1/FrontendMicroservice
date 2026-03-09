@@ -4,6 +4,7 @@ import Gatekeeper from "../pages/Gatekeeper.vue";
 import Register from "../pages/Register.vue"
 import Login from "../pages/Login.vue"
 import Map from "../pages/Map.vue"
+import Voting from "@/pages/Voting.vue";
 import {api} from "@/api.js";
 import Invitations from "@/pages/Invitations.vue";
 
@@ -13,6 +14,7 @@ const routes = [
     {path: '/login', name: 'Login', component: Login},
     {path: '/map', name: 'Map', component: Map},
     {path: '/block-ip', name: 'BlockIP', component: BlockIP},
+    {path: '/voting', name: 'Voting', component: Voting},
     {path: '/send-invite', name: 'Invitations', component: Invitations},
     {path: '/:pathMatch(.*)*', redirect: '/'}
 ]
