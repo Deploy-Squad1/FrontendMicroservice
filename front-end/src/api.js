@@ -2,28 +2,28 @@ import axios from 'axios';
 import router from './router';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api/v1',
+    baseURL: `/core/api/v1`,
     headers: {
         'Content-Type': 'application/json',
     },
     withCredentials: true,
 });
 const mapApi = axios.create({
-    baseURL: 'http://localhost:8080/api',
+    baseURL: `/map/api`,
     headers: {
         'Content-Type': 'application/json',
     },
     withCredentials: true,
 });
 const emailApi = axios.create({
-    baseURL: 'http://localhost:8081',
+    baseURL: `/email`,
     headers: {
         'Content-Type': 'application/json',
     },
     withCredentials: true,
 });
 const votingApi = axios.create({
-    baseURL: 'http://localhost:8085/api',
+    baseURL: `/voting/api`,
     headers: {
         'Content-Type': 'application/json',
     },
