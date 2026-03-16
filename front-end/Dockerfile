@@ -1,13 +1,11 @@
-FROM node:22-alpine
-
-WORKDIR /usr/src/app
-
-COPY package.json package-lock.json ./
-
+FROM node:lts-alpine AS build-stage
+WORKDIR /app
+COPY package*.json ./
 RUN npm install
+COPY ./ .
+RUN npm run build
 
-COPY . ./
-
-EXPOSE 5173
-
-CMD ["npm", "run", "dev", "--", "--host"]
+FROM nginx:stable-alpine AS production-stage
+RUN mkdir /app
+COPY --from=build-stage /app/dist /app
+COPY default.conf /etc/nginx/conf.d/default.conf
